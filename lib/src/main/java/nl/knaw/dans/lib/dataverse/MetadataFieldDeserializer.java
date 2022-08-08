@@ -60,9 +60,7 @@ public class MetadataFieldDeserializer extends StdDeserializer {
                 if (subField) throw new IllegalArgumentException("Compound fields cannot contain multi-value subfields");
                 Iterable<JsonNode> jsonNodeIterable = valueNode::elements;
                 return new PrimitiveMultiValueField(
-                    typeClass,
                     typeName,
-                    true,
                     StreamSupport.stream(jsonNodeIterable.spliterator(), false)
                         .map(JsonNode::asText).collect(Collectors.toList()));
             }
@@ -70,7 +68,6 @@ public class MetadataFieldDeserializer extends StdDeserializer {
                 return new PrimitiveSingleValueField(
                     typeClass,
                     typeName,
-                    false,
                     valueNode.asText());
             }
         }
@@ -79,17 +76,13 @@ public class MetadataFieldDeserializer extends StdDeserializer {
                 if (subField) throw new IllegalArgumentException("Compound fields cannot contain multi-value subfields");
                 Iterable<JsonNode> jsonNodeIterable = valueNode::elements;
                 return new ControlledMultiValueField(
-                    typeClass,
                     typeName,
-                    true,
                     StreamSupport.stream(jsonNodeIterable.spliterator(), false)
                         .map(JsonNode::asText).collect(Collectors.toList()));
             }
             else {
                 return new ControlledSingleValueField(
-                    typeClass,
                     typeName,
-                    false,
                     valueNode.asText());
             }
         }
@@ -97,7 +90,6 @@ public class MetadataFieldDeserializer extends StdDeserializer {
             if (subField) throw new IllegalArgumentException("Compound fields cannot contain compound fields as subfields");
             Iterable<JsonNode> jsonNodeIterable = valueNode::elements;
             return new CompoundField(
-                typeClass,
                 typeName,
                 multiple,
                 StreamSupport.stream(jsonNodeIterable.spliterator(), false)

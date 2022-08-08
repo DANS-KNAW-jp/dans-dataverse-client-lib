@@ -16,7 +16,6 @@
 package nl.knaw.dans.lib.dataverse;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -26,7 +25,6 @@ import nl.knaw.dans.lib.dataverse.model.dataverse.DataverseSubverseItem;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class DataverseItemDeserializer extends StdDeserializer {
@@ -40,7 +38,7 @@ public class DataverseItemDeserializer extends StdDeserializer {
     }
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String dataverseItemType = node.get("type").asText();
         if (DataverseItemType.dataverse.toString().equals(dataverseItemType)) {
@@ -49,7 +47,7 @@ public class DataverseItemDeserializer extends StdDeserializer {
         else if (DataverseItemType.dataset.toString().equals(dataverseItemType)) {
             DataverseDatasetItem item = new DataverseDatasetItem();
             Optional.ofNullable(node.get("id")).ifPresent(n -> item.setId(n.asInt()));
-            Optional.ofNullable(node.get("persistentUrl")).ifPresent(n -> item.setPersistentUrl(createUri(n.asText())));
+            Optional.ofNullable(node.get("persistentUrl")).ifPresent(n -> item.setPersistentUrl(URI.create(n.asText())));
             Optional.ofNullable(node.get("protocol")).ifPresent(n -> item.setProtocol(n.asText()));
             Optional.ofNullable(node.get("authority")).ifPresent(n -> item.setAuthority(n.asText()));
             Optional.ofNullable(node.get("publisher")).ifPresent(n -> item.setPublisher(n.asText()));
@@ -60,15 +58,6 @@ public class DataverseItemDeserializer extends StdDeserializer {
         }
         else {
             throw new IllegalArgumentException("Not a valid dataverse item type: " + dataverseItemType);
-        }
-    }
-
-    private URI createUri(String s) {
-        try {
-            return new URI(s);
-        }
-        catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Not a valid URI: " + s);
         }
     }
 }

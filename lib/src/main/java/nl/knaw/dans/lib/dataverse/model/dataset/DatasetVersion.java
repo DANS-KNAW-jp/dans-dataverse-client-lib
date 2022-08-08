@@ -15,6 +15,9 @@
  */
 package nl.knaw.dans.lib.dataverse.model.dataset;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
+
 import java.util.List;
 import java.util.Map;
 
@@ -27,10 +30,13 @@ public class DatasetVersion {
     private int versionNumber;
     private int versionMinorNumber;
     private String versionState; // TODO: to enum
+    private String versionNote; // TODO: to enum
     private String unf;
     private String lastUpdateTime; // TODO: timestamp?
     private String releaseTime; // TODO: timestamp?
     private String createTime; // TODO: timestamp?
+    private String distributionDate; // TODO: timestamp?
+    private String productionDate; // TODO: timestamp?
     private boolean fileAccessRequest;
     private String termsOfUse;
     private String termsOfAccess;
@@ -39,7 +45,8 @@ public class DatasetVersion {
     private String authority;
     private String identifier;
     private Map<String, MetadataBlock> metadataBlocks;
-    private List<Object> files;
+    private List<FileMeta> files;
+    private String citation;
 
     public int getId() {
         return id;
@@ -97,11 +104,21 @@ public class DatasetVersion {
         this.versionState = versionState;
     }
 
-    public String getUnf() {
+    public String getVersionNote() {
+        return versionNote;
+    }
+
+    public void setVersionNote(String versionNote) {
+        this.versionNote = versionNote;
+    }
+
+    @JsonProperty("UNF")
+    public String getUNF() {
         return unf;
     }
 
-    public void setUnf(String unf) {
+    @JsonProperty("UNF")
+    public void setUNF(String unf) {
         this.unf = unf;
     }
 
@@ -127,6 +144,22 @@ public class DatasetVersion {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public String getDistributionDate() {
+        return distributionDate;
+    }
+
+    public void setDistributionDate(String distributionDate) {
+        this.distributionDate = distributionDate;
+    }
+
+    public String getProductionDate() {
+        return productionDate;
+    }
+
+    public void setProductionDate(String productionDate) {
+        this.productionDate = productionDate;
     }
 
     public boolean isFileAccessRequest() {
@@ -193,11 +226,19 @@ public class DatasetVersion {
         this.metadataBlocks = metadataBlocks;
     }
 
-    public List<Object> getFiles() {
+    public List<FileMeta> getFiles() {
         return files;
     }
 
-    public void setFiles(List<Object> files) {
+    public void setFiles(List<FileMeta> files) {
         this.files = files;
+    }
+
+    public String getCitation() {
+        return citation;
+    }
+
+    public void setCitation(String citation) {
+        this.citation = citation;
     }
 }

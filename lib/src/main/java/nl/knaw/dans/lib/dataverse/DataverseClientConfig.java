@@ -20,16 +20,55 @@ import java.net.URI;
 public class DataverseClientConfig {
     private final URI baseUrl;
     private final String apiToken;
+    private final int awaitLockStateMaxNumberOfRetries;
+    private final int awaitLockStateMillisecondsBetweenRetries;
+    private final String unblockKey;
 
     /**
-     * Configuration data for the {@link DataverseClient}.
+     * Configuration settings for the {@link DataverseClient}.
      *
-     * @param baseUrl the base URL of the Dataverse server to communicate with
+     * @param baseUrl                                  the base URL of the Dataverse server to communicate with
+     * @param apiToken                                 the API token used for authorization
+     * @param awaitLockStateMaxNumberOfRetries         the maximum number of tries for {@link DatasetApi#awaitLock(String)} API (default 30)
+     * @param awaitLockStateMillisecondsBetweenRetries the number or milliseconds to wait between tries for {@link DatasetApi#awaitLock(String)} API (default 500)
+     * @param unblockKey                               a key required for admin tasks when not running on localhost
+     */
+    public DataverseClientConfig(URI baseUrl, String apiToken, int awaitLockStateMaxNumberOfRetries, int awaitLockStateMillisecondsBetweenRetries, String unblockKey) {
+        this.baseUrl = baseUrl;
+        this.apiToken = apiToken;
+        this.awaitLockStateMaxNumberOfRetries = awaitLockStateMaxNumberOfRetries;
+        this.awaitLockStateMillisecondsBetweenRetries = awaitLockStateMillisecondsBetweenRetries;
+        this.unblockKey = unblockKey;
+    }
+
+    /**
+     * Configuration settings for the {@link DataverseClient}.
+     *
+     * @param baseUrl    the base URL of the Dataverse server to communicate with
+     * @param apiToken   the API token used for authorization
+     * @param unblockKey a key required for admin tasks when not running on localhost
+     */
+    public DataverseClientConfig(URI baseUrl, String apiToken, String unblockKey) {
+        this(baseUrl, apiToken, 30, 500, unblockKey);
+    }
+
+    /**
+     * Configuration settings for the {@link DataverseClient}.
+     *
+     * @param baseUrl  the base URL of the Dataverse server to communicate with
      * @param apiToken the API token used for authorization
      */
     public DataverseClientConfig(URI baseUrl, String apiToken) {
-        this.baseUrl = baseUrl;
-        this.apiToken = apiToken;
+        this(baseUrl, apiToken, 30, 500, null);
+    }
+
+    /**
+     * Configuration settings for the {@link DataverseClient}. No API token is specified, so the client will only able to access endpoints that require no account.
+     *
+     * @param baseUrl the base URL of the Dataverse server to communicate with
+     */
+    public DataverseClientConfig(URI baseUrl) {
+        this(baseUrl, null);
     }
 
     public URI getBaseUrl() {
@@ -38,5 +77,17 @@ public class DataverseClientConfig {
 
     public String getApiToken() {
         return apiToken;
+    }
+
+    int getAwaitLockStateMaxNumberOfRetries() {
+        return awaitLockStateMaxNumberOfRetries;
+    }
+
+    int getAwaitLockStateMillisecondsBetweenRetries() {
+        return awaitLockStateMillisecondsBetweenRetries;
+    }
+
+    public String getUnblockKey() {
+        return unblockKey;
     }
 }

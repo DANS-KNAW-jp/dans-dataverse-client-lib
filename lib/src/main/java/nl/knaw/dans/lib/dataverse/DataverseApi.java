@@ -19,6 +19,8 @@ import nl.knaw.dans.lib.dataverse.model.DataMessage;
 import nl.knaw.dans.lib.dataverse.model.Role;
 import nl.knaw.dans.lib.dataverse.model.RoleAssignment;
 import nl.knaw.dans.lib.dataverse.model.dataset.Dataset;
+import nl.knaw.dans.lib.dataverse.model.dataset.DatasetCreationResult;
+import nl.knaw.dans.lib.dataverse.model.dataset.MetadataBlockSummary;
 import nl.knaw.dans.lib.dataverse.model.dataverse.Dataverse;
 import nl.knaw.dans.lib.dataverse.model.dataverse.DataverseItem;
 import org.slf4j.Logger;
@@ -27,8 +29,14 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 
 /**
  * API end-points that operate on a dataverse collection.
@@ -41,6 +49,7 @@ public class DataverseApi extends AbstractApi {
 
     private static final Logger log = LoggerFactory.getLogger(DataverseApi.class);
     private final Path subPath;
+    private static final String publish = "actions/:publish";
 
     protected DataverseApi(HttpClientWrapper httpClientWrapper, String alias) {
         super(httpClientWrapper);
@@ -127,9 +136,9 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#list-roles-defined-in-a-dataverse-collection
      */
-    public DataverseHttpResponse<DataMessage> listRoles() throws IOException, DataverseException {
+    public DataverseHttpResponse<List<Role>> listRoles() throws IOException, DataverseException {
         log.trace("ENTER");
-        return httpClientWrapper.get(subPath.resolve("roles"), DataMessage.class);
+        return httpClientWrapper.get(subPath.resolve("roles"), List.class, Role.class);
     }
 
     /**
@@ -165,7 +174,6 @@ public class DataverseApi extends AbstractApi {
         throw new UnsupportedOperationException();
     }
 
-
     /**
      * See [Dataverse API Guide].
      *
@@ -199,7 +207,6 @@ public class DataverseApi extends AbstractApi {
         throw new UnsupportedOperationException();
     }
 
-
     /**
      * See [Dataverse API Guide].
      *
@@ -227,11 +234,9 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#list-metadata-blocks-defined-on-a-dataverse-collection
      */
-    public DataverseHttpResponse<DataMessage> listMetadataBlocks() throws IOException, DataverseException {
+    public DataverseHttpResponse<List<MetadataBlockSummary>> listMetadataBlocks() throws IOException, DataverseException {
         log.trace("ENTER");
-        // TODO: implement
-        throw new UnsupportedOperationException();
-    }
+        return httpClientWrapper.get(subPath.resolve("metadatablocks"), List.class, MetadataBlockSummary.class);    }
 
     /**
      * See [Dataverse API Guide].
@@ -249,10 +254,9 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#determine-if-a-dataverse-collection-inherits-its-metadata-blocks-from-its-parent
      */
-    public DataverseHttpResponse<DataMessage> isMetadataBlocksRoot() throws IOException, DataverseException {
+    public DataverseHttpResponse<Boolean> isMetadataBlocksRoot() throws IOException, DataverseException {
         log.trace("ENTER");
-        // TODO: implement
-        throw new UnsupportedOperationException();
+        return httpClientWrapper.get(subPath.resolve("metadatablocks/isRoot"), Boolean.class);
     }
 
     /**
@@ -262,8 +266,8 @@ public class DataverseApi extends AbstractApi {
      */
     public DataverseHttpResponse<DataMessage> setMetadataBlocksRoot(boolean isRoot) throws IOException, DataverseException {
         log.trace("ENTER");
-        // TODO: implement
-        throw new UnsupportedOperationException();
+        return httpClientWrapper.putTextString(subPath.resolve("metadatablocks/isRoot"), Boolean.toString(isRoot),
+            Collections.emptyMap(), Collections.emptyMap(), DataMessage.class);
     }
 
     /**
@@ -271,19 +275,17 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#create-a-dataset-in-a-dataverse-collection
      */
-    public DataverseHttpResponse<DataMessage> createDataset(String dataset) throws IOException, DataverseException {
+    public DataverseHttpResponse<DatasetCreationResult> createDataset(String dataset) throws IOException, DataverseException {
         log.trace("ENTER");
-        // TODO: implement
-        throw new UnsupportedOperationException();
+        return httpClientWrapper.postJsonString(subPath.resolve("datasets"), dataset,Collections.emptyMap(), Collections.emptyMap(), DatasetCreationResult.class);
     }
-
 
     /**
      * See [Dataverse API Guide].
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#create-a-dataset-in-a-dataverse-collection
      */
-    public DataverseHttpResponse<DataMessage> createDataset(Dataset dataset) throws IOException, DataverseException {
+    public DataverseHttpResponse<DatasetCreationResult> createDataset(Dataset dataset) throws IOException, DataverseException {
         log.trace("ENTER");
         // TODO: implement
         throw new UnsupportedOperationException();
@@ -294,10 +296,18 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#import-a-dataset-into-a-dataverse-collection
      */
-    public DataverseHttpResponse<DataMessage> importDataset() throws IOException, DataverseException {
+    public DataverseHttpResponse<DatasetCreationResult> importDataset() throws IOException, DataverseException {
         log.trace("ENTER");
         // TODO: implement
         throw new UnsupportedOperationException();
+    }
+
+    public DataverseHttpResponse<DatasetCreationResult> importDataset(String dataset, Optional<String> optPersistentId, boolean autoPublish) throws IOException, DataverseException {
+        log.trace("ENTER");
+        Map<String, List<String>> parameters = new HashMap<>();
+        optPersistentId.ifPresent(pid -> parameters.put("release", singletonList("" + autoPublish)));
+        optPersistentId.ifPresent(pid -> parameters.put("pid", singletonList(pid)));
+        return httpClientWrapper.postJsonString(subPath.resolve("datasets/:import"), dataset, parameters, emptyMap(), DatasetCreationResult.class);
     }
 
     /**
@@ -305,7 +315,7 @@ public class DataverseApi extends AbstractApi {
      *
      * [Dataverse API Guide]: https://guides.dataverse.org/en/latest/api/native-api.html#import-a-dataset-into-a-dataverse-installation-with-a-ddi-file
      */
-    public DataverseHttpResponse<DataMessage> importDatasetFromDdi() throws IOException, DataverseException {
+    public DataverseHttpResponse<DatasetCreationResult> importDatasetFromDdi() throws IOException, DataverseException {
         log.trace("ENTER");
         // TODO: implement
         throw new UnsupportedOperationException();
@@ -318,8 +328,7 @@ public class DataverseApi extends AbstractApi {
      */
     public DataverseHttpResponse<DataMessage> publish() throws IOException, DataverseException {
         log.trace("ENTER");
-        // TODO: implement
-        throw new UnsupportedOperationException();
+        return httpClientWrapper.postJsonString(subPath.resolve(publish), "", new HashMap<>(), new HashMap<>(), DataMessage.class);
     }
 
     /**
